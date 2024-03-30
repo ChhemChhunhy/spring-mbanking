@@ -17,20 +17,46 @@ public class Transaction {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    // transactions by one user
-    //one user make many transactions
-    //sender
-    //many transactions have one account
+
     @ManyToOne
-    private Account sender;
-    //receiver
+    private Account owner;
+
     @ManyToOne
-    //many transaction have one account
-    private Account receiver;
+    private Account transferReceiver; // uses when transaction type is TRANSFER
+
+    private String paymentReceiver;
+
     private BigDecimal amount;
+
+    @Column(columnDefinition = "TEXT")
     private String remark;
-    //isPayment
-    private Boolean isPayment;
+
+    @Column(nullable = false, length = 30)
+    private String transactionType; // transfer and payment
+
+    private Boolean status; // Pending, Completed, Failed
+
     private LocalDateTime transactionAt;
-    private Boolean isDelete;
+
+
+
+//    @Id
+//    @GeneratedValue(strategy = GenerationType.IDENTITY)
+//    private Long id;
+//    // transactions by one user
+//    //one user make many transactions
+//    //sender
+//    //many transactions have one account
+//    @ManyToOne
+//    private Account sender;
+//    //receiver
+//    @ManyToOne
+//    //many transaction have one account
+//    private Account receiver;
+//    private BigDecimal amount;
+//    private String remark;
+//    //isPayment
+//    private Boolean isPayment;
+//    private LocalDateTime transactionAt;
+//    private Boolean isDelete;
 }
