@@ -1,12 +1,11 @@
 package co.istad.mbakingapi.features.user;
 
+import co.istad.mbakingapi.features.user.dto.UserChangePasswordRequest;
 import co.istad.mbakingapi.features.user.dto.UserCreateRequest;
+import co.istad.mbakingapi.features.user.dto.UserEditRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -16,5 +15,15 @@ public class UserController {
     @PostMapping
     void createNew(@Valid @RequestBody UserCreateRequest userCreateRequest){
         userService.createNew(userCreateRequest);
+    }
+
+    @PutMapping("/changingPasswords")
+    void userChangePassword(@Valid @RequestBody  UserChangePasswordRequest userChangePasswordRequest){
+        userService.userChangePassword(userChangePasswordRequest);
+    }
+
+    @PutMapping("/uuid/{uuid}")
+    void editUserByUuid(@PathVariable String uuid,@RequestBody UserEditRequest userEditRequest){
+       userService.editUserByUuid(uuid,userEditRequest);
     }
 }

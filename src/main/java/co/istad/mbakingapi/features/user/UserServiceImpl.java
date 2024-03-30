@@ -2,7 +2,9 @@ package co.istad.mbakingapi.features.user;
 
 import co.istad.mbakingapi.domain.Role;
 import co.istad.mbakingapi.domain.User;
+import co.istad.mbakingapi.features.user.dto.UserChangePasswordRequest;
 import co.istad.mbakingapi.features.user.dto.UserCreateRequest;
+import co.istad.mbakingapi.features.user.dto.UserEditRequest;
 import co.istad.mbakingapi.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -76,6 +78,45 @@ public class UserServiceImpl implements UserService{
         //subscriber.setName("SUBSCRIBER");
         //roles.add(subscriber);
         user.setRoles(roles);
+        userRepository.save(user);
+    }
+
+    @Override
+    public void userChangePassword(UserChangePasswordRequest userChangePasswordRequest) {
+        if (!userRepository.existsByName(userChangePasswordRequest.name())){
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Cannot found user name"+userChangePasswordRequest.name()
+            );
+        }
+
+        User user = userRepository.findByPassword(userChangePasswordRequest.oldPassword()).orElseThrow(
+                ()-> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Password doest not match"
+                )
+        );
+        if(!userChangePasswordRequest.newPassword().equals(userChangePasswordRequest.confirmedNewPassword())){
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Password does not match.Please try again."
+            );
+        }
+        user.setPassword(userChangePasswordRequest.newPassword());
+        userRepository.save(user);
+
+
+    }
+
+    @Override
+    public void editUserByUuid(String uuid, UserEditRequest userEditRequest) {
+        User user = userRepository.findByUuid(uuid).orElseThrow(
+                ()-> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "User doses not exist"
+                )
+        );
+        userMapper.fromUserEditRequest(user,userEditRequest);
         userRepository.save(user);
     }
 }
