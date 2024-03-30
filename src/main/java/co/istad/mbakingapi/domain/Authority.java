@@ -5,16 +5,22 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @NoArgsConstructor
 @Getter
 @Setter
 @Entity
-@Table(name = "role_authorities")
-public class RoleAuthority {
+@Table(name = "authorities")
+
+public class Authority {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    private Integer authority_id;
-    @ManyToOne
-    private Role role;
+
+    private String name;
+
+    @ManyToMany(mappedBy = "authorities")
+    private List<Role> roles;
+
 }

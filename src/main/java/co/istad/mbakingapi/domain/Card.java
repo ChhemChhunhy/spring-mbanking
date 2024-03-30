@@ -15,19 +15,45 @@ import java.util.Locale;
 @Table(name = "cards")
 public class Card {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(unique = true,updatable = false)
+
+    @Column(unique = true, nullable = false)
     private String number;
+
     @Column(nullable = false)
     private String cvv;
+
     private String holder;
+
     private LocalDate issuedAt;
-    private LocalDate expiresAt;
+    private LocalDate expiredAt;
+
     private Boolean isDeleted;
+
     @ManyToOne
     @JoinColumn(name = "type_id")
     private CardType cardType;
+
     @OneToOne(mappedBy = "card")
     private Account account;
+
+
+
+//    @Id
+//    private Long id;
+//    @Column(unique = true,updatable = false)
+//    private String number;
+//    @Column(nullable = false)
+//    private String cvv;
+//    private String holder;
+//    private LocalDate issuedAt;
+//    private LocalDate expiresAt;
+//    private Boolean isDeleted;
+//    @ManyToOne
+//    @JoinColumn(name = "type_id")
+//    private CardType cardType;
+//    @OneToOne(mappedBy = "card")
+//    private Account account;
 
 }
