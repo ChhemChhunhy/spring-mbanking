@@ -36,10 +36,12 @@ public class UserController {
     UserResponse findUserByUuid(@PathVariable String uuid){
         return userService.findUserByUuid(uuid);
     }
+
     @PutMapping("/{uuid}/block")
     BaseMessage blockByUuid(@PathVariable String uuid){
         return userService.blockByUuid(uuid);
     }
+
     //Delete user by uuid (hard delete) /{uuid}
     @DeleteMapping("/{uuid}")
     void deleteByUuid(@PathVariable String uuid){
