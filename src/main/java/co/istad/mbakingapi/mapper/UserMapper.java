@@ -9,6 +9,8 @@ import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
+import java.util.List;
+
 @Mapper(componentModel = "spring")
 public interface UserMapper {
     //entity
@@ -19,8 +21,11 @@ public interface UserMapper {
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void fromUserUpdateRequest(UserUpdateRequest userUpdateRequest,@MappingTarget User user);
 
+    UserDetailResponse toUserDetailResponse(User user);
+
     UserResponse toUserResponse(User user);
 
+    List<UserResponse> toUserResponseList(List<User> user);
 
     // void fromUserCreateRequest2(@MappingTarget UserCreateRequest userCreateRequest,User user);
 

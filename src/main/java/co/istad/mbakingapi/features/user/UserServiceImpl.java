@@ -7,6 +7,8 @@ import co.istad.mbakingapi.features.user.dto.*;
 import co.istad.mbakingapi.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +23,17 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Slf4j
 public class UserServiceImpl implements UserService{
+    @Override
+    public UserResponse findByUuid(String uuid) {
+        User user = userRepository.findByUuid(uuid).orElseThrow(
+                ()-> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "User doses not exist"
+                )
+        );
+        return userMapper.toUserResponse(user);
+    }
+
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final  RoleRepository roleRepository;
@@ -151,14 +164,16 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public UserResponse findUserByUuid(String uuid) {
+    public UserDetailResponse findUserByUuid(String uuid) {
         User user = userRepository.findByUuid(uuid).orElseThrow(
                 ()-> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
                         "User doses not exist"
                 )
         );
-        return userMapper.toUserResponse(user);
+        //override toString stackOverFlow because it use bidirectional
+        //user.getRoles().forEach(role -> log.info("Roles: {}",role));
+        return userMapper.toUserDetailResponse(user);
     }
 
     /*
@@ -239,6 +254,15 @@ public class UserServiceImpl implements UserService{
         }
         userRepository.updateIsDeleted(uuid);
         return new BaseMessage("User is disabled");
+    }
+
+    @Override
+    public Page<UserResponse> findList(int page,int limit) {
+        PageRequest pageRequest = PageRequest.of(page,limit);
+        Page<User> users = userRepository.findAll(pageRequest);
+        //List<User> user = userRepository.findAll();
+        //return userMapper.toUserResponseList(user);
+        return users.map(userMapper::toUserResponse);
     }
 
 }

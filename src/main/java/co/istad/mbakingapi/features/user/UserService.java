@@ -2,6 +2,9 @@ package co.istad.mbakingapi.features.user;
 
 import co.istad.mbakingapi.base.BaseMessage;
 import co.istad.mbakingapi.features.user.dto.*;
+import org.springframework.data.domain.Page;
+
+import java.util.List;
 
 public interface UserService {
     void createNew(UserCreateRequest userCreateRequest);
@@ -11,8 +14,8 @@ public interface UserService {
     //asociate review detailsResponse and response
     UserResponse updateByUuid(String uuid, UserUpdateRequest userUpdateRequest);
 
-    UserResponse findUserByUuid(String uuid);
-
+    UserDetailResponse findUserByUuid(String uuid);
+    UserResponse findByUuid(String uuid);
     BaseMessage blockByUuid(String uuid);
     void deleteByUuid(String uuid);
 
@@ -22,4 +25,5 @@ public interface UserService {
     BaseMessage enableUserByUuid(String uuid);
     BaseMessage disableUserByUuid(String uuid);
 
+    Page<UserResponse> findList(int pages, int limit);
 }
