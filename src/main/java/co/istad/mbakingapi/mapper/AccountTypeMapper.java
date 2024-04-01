@@ -10,6 +10,7 @@ import java.util.List;
 public interface AccountTypeMapper {
     List<AccountTypeResponse> toListAccountTypes(List<AccountType> accountTypes);
 
+    List<AccountTypeResponse> toAccountTypesResponseList(List<AccountType> accountType);
     AccountTypeResponse toAccountTypeResponse(AccountType accountType);
 
 }

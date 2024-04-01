@@ -6,6 +6,8 @@ import java.util.List;
 
 public interface AccountTypeService {
     List<AccountTypeResponse> findAllAccountTypes();
+    List<AccountTypeResponse> findLists();
     AccountTypeResponse findAccountTypeByAlias(String alias);
+    AccountTypeResponse findByAlias(String alias);
 
 }

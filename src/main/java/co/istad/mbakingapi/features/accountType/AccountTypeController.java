@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/accountTypes")
+@RequestMapping("/api/v1/account-types")
 @RequiredArgsConstructor
 public class AccountTypeController {
     private final AccountTypeService accountTypeService;

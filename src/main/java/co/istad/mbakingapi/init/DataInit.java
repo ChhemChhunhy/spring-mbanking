@@ -45,21 +45,27 @@ public class DataInit {
 
     @PostConstruct
     void initAccountType(){
-        // auto generated
         if (accountTypeRepository.count()<1){
            AccountType payRoll = new AccountType();
-           payRoll.setName("Payroll");
-           payRoll.setAlias("payroll");
+           payRoll.setName("Payroll Account");
+           payRoll.setAlias("payroll-account");
            payRoll.setIsDeleted(false);
-           payRoll.setDescription("For payroll account type");
+           payRoll.setDescription("A payroll account is a checking account that a business uses to pay its employees.");
 
            AccountType saving = new AccountType();
-           saving.setName("Saving");
-           saving.setAlias("saving");
+           saving.setName("Saving Account");
+           saving.setAlias("saving-account");
            saving.setIsDeleted(false);
-           saving.setDescription("For saving account type");
+           saving.setDescription("A savings account is a type of bank account that allows you to store money and earn interest.");
 
-           accountTypeRepository.saveAll(
+            AccountType card = new AccountType();
+            card.setName("Card Account");
+            card.setAlias("card-account");
+            card.setIsDeleted(false);
+            card.setDescription("A card account is the account that a cardholder has with a bank, and where withdrawals are debited and deposits are credited when the cardholder makes a transaction. ");
+            accountTypeRepository.save(card);
+
+            accountTypeRepository.saveAll(
                    List.of(payRoll,saving)
            );
 
