@@ -1,16 +1,17 @@
 package co.istad.mbakingapi.features.user;
 
+import co.istad.mbakingapi.base.BaseMessage;
 import co.istad.mbakingapi.domain.Role;
 import co.istad.mbakingapi.domain.User;
-import co.istad.mbakingapi.features.user.dto.UserChangePasswordRequest;
-import co.istad.mbakingapi.features.user.dto.UserCreateRequest;
-import co.istad.mbakingapi.features.user.dto.UserEditRequest;
+import co.istad.mbakingapi.features.user.dto.*;
 import co.istad.mbakingapi.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
@@ -21,6 +22,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserServiceImpl implements UserService{
     private final UserRepository userRepository;
     private final UserMapper userMapper;
@@ -57,9 +59,9 @@ public class UserServiceImpl implements UserService{
             );
         }
 
+        //DTO pattern (mapstruct ft. lombok)
         User user = userMapper.fromUserCreateRequest(userCreateRequest);
         user.setUuid(UUID.randomUUID().toString());
-
         user.setProfileImage("avatar.png");
         user.setCreatedAt(LocalDateTime.now());
         user.setIsBlocked(false);
@@ -70,6 +72,15 @@ public class UserServiceImpl implements UserService{
                         HttpStatus.NOT_FOUND,"Role not found"
                 )
         );
+        //create dynamic roles (not map struct )
+        userCreateRequest.roles().forEach(r-> {
+            Role newRole = roleRepository.findByName(r.name()).orElseThrow(
+                    () -> new ResponseStatusException(
+                            HttpStatus.NOT_FOUND,"Role not found"
+                    )
+            );
+            roles.add(newRole);
+        });
 
         //mange transaction
         roles.add(userRole);
@@ -119,4 +130,55 @@ public class UserServiceImpl implements UserService{
         userMapper.fromUserEditRequest(user,userEditRequest);
         userRepository.save(user);
     }
+
+    @Override
+    public UserResponse updateByUuid(String uuid, UserUpdateRequest userUpdateRequest) {
+        //exist returns boolean
+        //patch
+        //find return object
+        //check uuid
+        //User user = userRepository.findByUuid(uuid)
+        //path
+        User user = userRepository.findByUuid(uuid).orElseThrow(
+                ()-> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "User doses not exist"
+                )
+        );
+        log.info("Before user :"+user.getName());
+        userMapper.fromUserUpdateRequest(userUpdateRequest,user);
+        log.info("After user :"+user.getName());
+        user = userRepository.save(user);
+        return userMapper.toUserResponse(user);
+       // return null;
+    }
+
+    @Override
+    public UserResponse findUserByUuid(String uuid) {
+        User user = userRepository.findByUuid(uuid).orElseThrow(
+                ()-> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "User doses not exist"
+                )
+        );
+        return userMapper.toUserResponse(user);
+    }
+
+    /*
+    * Derived Query and JPQL = read
+    * transaction = update , post
+    * */
+    @Transactional
+    @Override
+    public BaseMessage blockByUuuid(String uuid) {
+        if(!userRepository.existsByUuid(uuid)){
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "User doses not exist"
+            );
+        }
+        userRepository.blockByUuid(uuid);
+        return new BaseMessage("User has  been blocked");
+    }
+
 }

@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -39,7 +40,7 @@ public class User {
     @Column(length = 8)
     private String gender;
 
-    private LocalDateTime dob;
+    private LocalDate dob;
     @Column(unique = true, nullable = false, length = 30)
     private String phoneNumber;
 

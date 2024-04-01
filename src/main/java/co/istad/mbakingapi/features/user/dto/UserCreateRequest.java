@@ -5,6 +5,7 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.validation.constraints.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public record UserCreateRequest(
         @NotNull
@@ -38,7 +39,14 @@ public record UserCreateRequest(
         String nationalCardId,
 
         @Size(max = 20)
-        String studentIdCard
+        String studentIdCard,
+
+        //list objects
+
+        @NotEmpty
+        List<RoleRequest> roles
+
+
 
 //        @NotNull
 //        @Max(9999)
