@@ -6,15 +6,12 @@ import co.istad.mbakingapi.domain.User;
 import co.istad.mbakingapi.features.user.dto.*;
 import co.istad.mbakingapi.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -170,7 +167,7 @@ public class UserServiceImpl implements UserService{
     * */
     @Transactional
     @Override
-    public BaseMessage blockByUuuid(String uuid) {
+    public BaseMessage blockByUuid(String uuid) {
         if(!userRepository.existsByUuid(uuid)){
             throw new ResponseStatusException(
                     HttpStatus.NOT_FOUND,
@@ -179,6 +176,69 @@ public class UserServiceImpl implements UserService{
         }
         userRepository.blockByUuid(uuid);
         return new BaseMessage("User has  been blocked");
+    }
+    @Transactional
+    @Override
+    public void deleteByUuid(String uuid) {
+        if(!userRepository.existsByUuid(uuid)){
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "User does not exist"
+            );
+        }
+        userRepository.deleteByUuid(uuid);
+    }
+
+
+
+    @Transactional
+    @Override
+    public void disableByUuid(String uuid) {
+        if (userRepository.existsByUuidAndIsDeletedFalse(uuid)){
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "User does not exist"
+            );
+        }
+        userRepository.updateIsDeleted(uuid);
+    }
+
+    @Transactional
+    @Override
+    public void enableByUuid(String uuid) {
+        if (userRepository.existsByUuidAndIsDeletedTrue(uuid)){
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "User does not exist"
+            );
+        }
+        userRepository.updateIsDeletedFalse(uuid);
+    }
+
+    @Transactional
+    @Override
+    public BaseMessage enableUserByUuid(String uuid) {
+        if (userRepository.existsByUuidAndIsDeletedTrue(uuid)){
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "User does not exist"
+            );
+        }
+        userRepository.updateIsDeletedFalse(uuid);
+        return new BaseMessage("User is already enabled");
+    }
+
+    @Transactional
+    @Override
+    public BaseMessage disableUserByUuid(String uuid) {
+        if (userRepository.existsByUuidAndIsDeletedFalse(uuid)){
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "User does not exist"
+            );
+        }
+        userRepository.updateIsDeleted(uuid);
+        return new BaseMessage("User is disabled");
     }
 
 }

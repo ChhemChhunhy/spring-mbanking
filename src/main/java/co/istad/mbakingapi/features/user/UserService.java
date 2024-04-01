@@ -13,5 +13,13 @@ public interface UserService {
 
     UserResponse findUserByUuid(String uuid);
 
-    BaseMessage blockByUuuid(String uuid);
+    BaseMessage blockByUuid(String uuid);
+    void deleteByUuid(String uuid);
+
+    void disableByUuid(String uuid);
+    void enableByUuid(String uuid);
+
+    BaseMessage enableUserByUuid(String uuid);
+    BaseMessage disableUserByUuid(String uuid);
+
 }
