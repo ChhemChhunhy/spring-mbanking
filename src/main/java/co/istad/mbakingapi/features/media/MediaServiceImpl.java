@@ -2,19 +2,24 @@ package co.istad.mbakingapi.features.media;
 
 import co.istad.mbakingapi.features.media.dto.MediaResponse;
 import co.istad.mbakingapi.util.MediaUtil;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -22,6 +27,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -62,30 +68,7 @@ public class MediaServiceImpl implements MediaService{
                 .build();
 
 
-//        //extract extension from file upload
-//        //Assume profile.png
-//        //String extension = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".") + 1);
-//
-//        //generate new unique name for file upload
-//        String newFileName = newName + "." + extension;
-//
-//        //save file to disk
-//        try {
-//            file.transferTo(new File("C:\\Users\\<NAME>\\Desktop\\" + newFileName));
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//
-//        //return new MediaResponse(newName, newFileName);
-//        return null;
-//
-//        //UUID uuid = UUID.randomUUID();
-//        //String fileName = uuid.toString() + "." + file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".") + 1);
-//        //file.transferTo(new File("C:\\Users\\<NAME>\\Desktop\\" + fileName));
-//       // log.info("upload ",file.getContentType());
-        //MediaResoponse.builder().name(newName)
-        //String.format("%s%s/%s",baseUri,folerName,newName)
-        //.
+
     }
 
     @Override
@@ -171,4 +154,86 @@ public class MediaServiceImpl implements MediaService{
         }
 
     }
+
+
+
+
+
+
+
+@Override
+public List<MediaResponse> loadAllMedias(String folderName) {
+    Path path = Paths.get(serverPath + folderName);
+
+    try {
+        Resource resource = new UrlResource(path.toUri());
+        if (!resource.exists()) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Media not found"
+            );
+        }
+
+        List<MediaResponse> mediaResponseList = new ArrayList<>();
+        // Iterate over files in the directory
+        try (Stream<Path> paths = Files.list(path)) {
+            paths.forEach(filePath -> {
+
+                try {
+                    String fileName = filePath.getFileName().toString();
+                    // Create a MediaResponse object for each file
+                    MediaResponse mediaResponse = MediaResponse.builder()
+                            .name(fileName)
+                            .uri(baseUri + folderName + "/" + fileName) // Ensure correct URI
+                            .extension(MediaUtil.extractExtension(fileName))
+                            .size(Files.size(filePath))
+                            .build();
+                    // Add MediaResponse to the list
+                    mediaResponseList.add(mediaResponse);
+                } catch (IOException e) {
+                    throw new ResponseStatusException(
+                            HttpStatus.INTERNAL_SERVER_ERROR,
+                            "Error occurred while processing media file: " + filePath.getFileName()
+                    );
+                }
+            });
+        }
+        return mediaResponseList;
+    } catch (IOException e) {
+        throw new ResponseStatusException(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "Error occurred while accessing media directory"
+        );
+    }
+}
+
+
+@Override
+public ResponseEntity<Resource> downloadMediaByName(String fileName, String folderName, HttpServletRequest request) {
+    try {
+        // Get path of the image
+        Path imagePath = Paths.get(serverPath + folderName + "/" + fileName);
+        Resource resource = new UrlResource(imagePath.toUri());
+
+        if (resource.exists() && resource.isReadable()) {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.parseMediaType(Files.probeContentType(imagePath)));
+            // Set Content-Disposition to "attachment" to prompt download
+            headers.setContentDispositionFormData("attachment", resource.getFilename());
+
+            return ResponseEntity
+                    .ok()
+                    .headers(headers)
+                    .body(resource);
+        } else {
+            // Return 404 Not Found if resource does not exist or is not readable
+            return ResponseEntity.notFound().build();
+        }
+    } catch (IOException ex) {
+        // Handle exception
+        ex.printStackTrace();
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    }
+}
+
 }

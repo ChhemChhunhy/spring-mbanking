@@ -1,6 +1,10 @@
 package co.istad.mbakingapi.features.media;
 
 import co.istad.mbakingapi.features.media.dto.MediaResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -11,5 +15,8 @@ public interface MediaService {
     MediaResponse loadMediaByName(String mediaName,String folderName);
 
     MediaResponse deleteMediaByName(String mediaName,String folderName);
+
+    List<MediaResponse> loadAllMedias(String folderName);
+    ResponseEntity<Resource> downloadMediaByName(String fileName, String folderName, HttpServletRequest request);
 
 }

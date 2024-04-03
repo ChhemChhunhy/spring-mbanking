@@ -1,11 +1,17 @@
 package co.istad.mbakingapi.features.media;
 
+import co.istad.mbakingapi.base.BaseReset;
 import co.istad.mbakingapi.features.media.dto.MediaResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -33,4 +39,17 @@ public class MediaController {
     MediaResponse deleteMediaByName(@PathVariable String mediaName){
         return mediaService.deleteMediaByName(mediaName,"IMAGE");
     }
+    @GetMapping
+    List<MediaResponse> loadAllMedias(){
+        return mediaService.loadAllMedias("IMAGE");
+    }
+
+    @GetMapping("/download/{mediaName}")
+    public ResponseEntity<?> downloadFile(@PathVariable String mediaName, HttpServletRequest request){
+        return mediaService.downloadMediaByName(mediaName,"IMAGE", request);
+    }
+
+
+
+
 }
