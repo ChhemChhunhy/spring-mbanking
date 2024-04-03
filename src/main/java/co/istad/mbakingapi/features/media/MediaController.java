@@ -46,10 +46,27 @@ public class MediaController {
 
     @GetMapping("/download/{mediaName}")
     public ResponseEntity<?> downloadFile(@PathVariable String mediaName, HttpServletRequest request){
-        return mediaService.downloadMediaByName(mediaName,"IMAGE", request);
+        return mediaService.serverFile(mediaName,"IMAGE", request);
     }
 
+//    @GetMapping("/download/{name}")
+//    public MediaResponse downloadFile(@PathVariable("name") String name, HttpServletResponse response) {
+//        return mediaService.downloadMediaByName(name,"IMAGE",response);
+//    }
 
+//    @GetMapping("/download/{name}")
+//    public BaseReset<?> downloadFile(@PathVariable("name") String name, HttpServletResponse response) {
+//        var resultFiles = mediaService.downloadMediaByName(name,"IMAGE",response);
+//        return BaseReset.builder()
+//                .status(true)
+//                .code(HttpStatus.OK.value())
+//                .message("Download successfully")
+//                .timestamp(LocalDateTime.now())
+//                .data(resultFiles)
+//                .build();
+   // }
+
+// Assuming this is a controller or a service method where you want to retrieve all media files
 
 
 }

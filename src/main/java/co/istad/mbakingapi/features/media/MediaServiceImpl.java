@@ -68,7 +68,30 @@ public class MediaServiceImpl implements MediaService{
                 .build();
 
 
-
+//        //extract extension from file upload
+//        //Assume profile.png
+//        //String extension = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".") + 1);
+//
+//        //generate new unique name for file upload
+//        String newFileName = newName + "." + extension;
+//
+//        //save file to disk
+//        try {
+//            file.transferTo(new File("C:\\Users\\<NAME>\\Desktop\\" + newFileName));
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//
+//        //return new MediaResponse(newName, newFileName);
+//        return null;
+//
+//        //UUID uuid = UUID.randomUUID();
+//        //String fileName = uuid.toString() + "." + file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".") + 1);
+//        //file.transferTo(new File("C:\\Users\\<NAME>\\Desktop\\" + fileName));
+//       // log.info("upload ",file.getContentType());
+        //MediaResoponse.builder().name(newName)
+        //String.format("%s%s/%s",baseUri,folerName,newName)
+        //.
     }
 
     @Override
@@ -156,8 +179,38 @@ public class MediaServiceImpl implements MediaService{
     }
 
 
+@Override
+public MediaResponse downloadMediaByName(String mediaName, String folderName, HttpServletResponse response) {
+    Path path = Paths.get(serverPath + folderName + "//" + mediaName);
+    File file = path.toFile();
 
+    if (file.exists()) {
+        try {
+            byte[] imageData = Files.readAllBytes(path); // Read file content into byte array
+            String extension = MediaUtil.extractExtension(mediaName);
+            response.setContentType(MediaUtil.getContentType(extension));
+            response.setHeader("Content-Disposition", "attachment; filename=\"" + mediaName + "\"");
+            response.getOutputStream().write(imageData);
 
+            return MediaResponse.builder()
+                    .name(file.getName())
+                    .uri(baseUri + file.getName())
+                    .extension(MediaUtil.extractExtension(mediaName))
+                    .size(file.length())
+                    .build();
+        } catch (IOException e) {
+            throw new ResponseStatusException(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Error reading file: " + e.getMessage()
+            );
+        }
+    } else {
+        throw new ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                String.format("File '%s' not found!", mediaName)
+        );
+    }
+}
 
 
 
@@ -209,7 +262,7 @@ public List<MediaResponse> loadAllMedias(String folderName) {
 
 
 @Override
-public ResponseEntity<Resource> downloadMediaByName(String fileName, String folderName, HttpServletRequest request) {
+public ResponseEntity<Resource> serverFile(String fileName, String folderName, HttpServletRequest request) {
     try {
         // Get path of the image
         Path imagePath = Paths.get(serverPath + folderName + "/" + fileName);
@@ -235,5 +288,75 @@ public ResponseEntity<Resource> downloadMediaByName(String fileName, String fold
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
 }
+//    @Override
+//
+//    public ResponseEntity<Resource> serverFile(String fileName, String folderName, HttpServletRequest request) {
+//        try {
+//            // Get path of the image
+//            Path imagePath = Paths.get(serverPath+folderName+"/"+fileName);
+//            Resource resource = new UrlResource(imagePath.toUri());
+//
+//            if (resource.exists() && resource.isReadable()) {
+//                return ResponseEntity
+//                        .ok()
+//                        .contentType(MediaType.parseMediaType(Files.probeContentType(imagePath)))
+//                        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
+//                        .body(resource);
+//            } else {
+//                // Return 404 Not Found if resource does not exist or is not readable
+//                return ResponseEntity.notFound().build();
+//            }
+//        } catch (IOException ex) {
+//            // Handle exception
+//            ex.printStackTrace();
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+//        }
+//    }
+
+//    @Override
+//    public List<MediaResponse> loadAllMedias(String folderName) {
+//        Path path = Paths.get(serverPath+folderName);
+//        try {
+//            Resource resource = new UrlResource(path.toUri());
+//            if (!resource.exists()) {
+//                throw new ResponseStatusException(
+//                        HttpStatus.NOT_FOUND,
+//                        "Media not found"
+//                );
+//            }
+//
+//            List<MediaResponse> mediaResponseList = new ArrayList<>();
+//            // Iterate over files in the directory
+//            Files.walk(path)
+//                    .filter(Files::isRegularFile) // Filter out directories
+//                    .forEach(filePath -> {
+//                        String fileName = filePath.getFileName().toString();
+//                        try {
+//                            // Create a MediaResponse object for each file
+//                            MediaResponse mediaResponse = MediaResponse.builder()
+//                                    .name(fileName)
+//                                    .uri(baseUri + fileName)
+//                                    .extension(MediaUtil.extractExtension(fileName))
+//                                    .size(Files.size(filePath))
+//                                    .build();
+//                            // Add MediaResponse to the list
+//                            mediaResponseList.add(mediaResponse);
+//                        } catch (IOException e) {
+//                            throw new ResponseStatusException(
+//                                    HttpStatus.INTERNAL_SERVER_ERROR,
+//                                    "Error occurred while processing media file: " + fileName
+//                            );
+//                        }
+//                    });
+//
+//            return mediaResponseList;
+//        } catch (IOException e) {
+//            throw new ResponseStatusException(
+//                    HttpStatus.INTERNAL_SERVER_ERROR,
+//                    "Error occurred while accessing media directory"
+//            );
+//        }
+//    }
+
 
 }
