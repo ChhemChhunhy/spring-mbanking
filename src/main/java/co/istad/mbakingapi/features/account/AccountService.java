@@ -7,4 +7,6 @@ import co.istad.mbakingapi.features.user.dto.UserCreateRequest;
 public interface AccountService{
     void createNew(AccountCreateRequest accountCreateRequest);
     AccountResponse findByActNo(String actNo);
+
+    AccountResponse findByAccountNo(String actNo);
 }

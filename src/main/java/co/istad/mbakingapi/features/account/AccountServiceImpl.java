@@ -54,7 +54,7 @@ public class AccountServiceImpl implements AccountService{
         Account account = accountMapper.fromAccountCreateRequest(accountCreateRequest);
         account.setAccountType(accountType);
         account.setActName(user.getName());
-        account.setActNo("123456789");
+        account.setActNo("231234568");
         account.setTransferLimit(BigDecimal.valueOf(5000));
         account.setIsHidden(false);
 
@@ -73,9 +73,17 @@ public class AccountServiceImpl implements AccountService{
     @Override
     public AccountResponse findByActNo(String actNo) {
         Account account = accountRepository.findByActNo(actNo);
+
         AccountTypeResponse accountTypeResponse = accountTypeMapper.toAccountTypeResponse(account.getAccountType());
         UserResponse userResponse = userMapper.toUserResponse(account.getUserAccountList().get(0).getUser());
         return new AccountResponse(account.getAlias(),account.getActName(),account.getTransferLimit(),account.getBalance(),accountTypeResponse,userResponse);
 
     }
+
+    @Override
+    public AccountResponse findByAccountNo(String actNo) {
+        return null;
+    }
+
+
 }
