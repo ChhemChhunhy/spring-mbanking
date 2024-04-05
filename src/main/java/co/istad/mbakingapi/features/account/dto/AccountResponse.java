@@ -12,6 +12,6 @@ public record AccountResponse(
         BigDecimal balance,
         BigDecimal transferLimit,
         AccountTypeResponse accountTypeResponse,
-        UserDetailResponse userDetailResponse
+        UserResponse userResponse
 ) {
 }

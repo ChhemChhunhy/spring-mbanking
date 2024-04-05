@@ -11,6 +11,7 @@ import co.istad.mbakingapi.features.accountType.dto.AccountTypeResponse;
 import co.istad.mbakingapi.features.user.UserRepository;
 import co.istad.mbakingapi.features.user.dto.UserCreateRequest;
 import co.istad.mbakingapi.features.user.dto.UserDetailResponse;
+import co.istad.mbakingapi.features.user.dto.UserResponse;
 import co.istad.mbakingapi.mapper.AccountMapper;
 import co.istad.mbakingapi.mapper.AccountTypeMapper;
 import co.istad.mbakingapi.mapper.UserMapper;
@@ -73,8 +74,8 @@ public class AccountServiceImpl implements AccountService{
     public AccountResponse findByActNo(String actNo) {
         Account account = accountRepository.findByActNo(actNo);
         AccountTypeResponse accountTypeResponse = accountTypeMapper.toAccountTypeResponse(account.getAccountType());
-        UserDetailResponse userDetailResponse = userMapper.toUserDetailResponse(account.getUserAccountList().get(0).getUser());
-        return new AccountResponse(account.getAlias(),account.getActName(),account.getTransferLimit(),account.getBalance(),accountTypeResponse,userDetailResponse);
+        UserResponse userResponse = userMapper.toUserResponse(account.getUserAccountList().get(0).getUser());
+        return new AccountResponse(account.getAlias(),account.getActName(),account.getTransferLimit(),account.getBalance(),accountTypeResponse,userResponse);
 
     }
 }

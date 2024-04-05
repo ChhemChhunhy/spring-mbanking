@@ -66,7 +66,7 @@ public class MediaController {
                 .headers(headers)
                 .body(resource);
     }
-    @DeleteMapping("/{mediaName}")
+    @DeleteMapping("/delete/{mediaName}")
     MediaResponse deleteByName(@PathVariable String mediaName) {
         return mediaService.deleteByName(mediaName, "IMAGE");
     }
