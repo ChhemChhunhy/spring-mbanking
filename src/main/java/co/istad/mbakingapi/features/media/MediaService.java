@@ -20,5 +20,6 @@ public interface MediaService {
     ResponseEntity<Resource> serverFile(String fileName, String folderName, HttpServletRequest request);
 
     Resource downloadMediaByName(String mediaName,String folderName);
+    MediaResponse deleteByName(String mediaName, String folderName);
 
 }

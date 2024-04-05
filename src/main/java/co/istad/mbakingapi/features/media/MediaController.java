@@ -53,14 +53,24 @@ public class MediaController {
 
     //produce = accepts
     //consumes = content-types
-    @GetMapping(value = "/{mediaName}/download",produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    ResponseEntity<?> downloadMediaByName(@PathVariable String mediaName){
-        Resource resource = mediaService.downloadMediaByName(mediaName,"IMAGE");
+    // produces = Accept
+    // consumes = Content-Type
+    @GetMapping(path = "/{mediaName}/download",
+            produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    ResponseEntity<?> downloadMediaByName(@PathVariable String mediaName) {
+        System.out.println("Start download");
+        Resource resource = mediaService.downloadMediaByName(mediaName, "IMAGE");
         HttpHeaders headers = new HttpHeaders();
-        headers.set(HttpHeaders.CONTENT_DISPOSITION,"attachment; filename"+mediaName);
-        return  ResponseEntity.ok().headers(headers).body(resource);
-        //return ResponseEntity.ok(resource);
+        headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + mediaName);
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(resource);
     }
+    @DeleteMapping("/{mediaName}")
+    MediaResponse deleteByName(@PathVariable String mediaName) {
+        return mediaService.deleteByName(mediaName, "IMAGE");
+    }
+
 
 
 

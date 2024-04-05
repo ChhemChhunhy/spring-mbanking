@@ -68,30 +68,7 @@ public class MediaServiceImpl implements MediaService{
                 .build();
 
 
-//        //extract extension from file upload
-//        //Assume profile.png
-//        //String extension = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".") + 1);
-//
-//        //generate new unique name for file upload
-//        String newFileName = newName + "." + extension;
-//
-//        //save file to disk
-//        try {
-//            file.transferTo(new File("C:\\Users\\<NAME>\\Desktop\\" + newFileName));
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//
-//        //return new MediaResponse(newName, newFileName);
-//        return null;
-//
-//        //UUID uuid = UUID.randomUUID();
-//        //String fileName = uuid.toString() + "." + file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".") + 1);
-//        //file.transferTo(new File("C:\\Users\\<NAME>\\Desktop\\" + fileName));
-//       // log.info("upload ",file.getContentType());
-        //MediaResoponse.builder().name(newName)
-        //String.format("%s%s/%s",baseUri,folerName,newName)
-        //.
+
     }
 
     @Override
@@ -290,19 +267,42 @@ public ResponseEntity<Resource> serverFile(String fileName, String folderName, H
 }
 
     @Override
-    public Resource downloadMediaByName(String mediaName,String folderName) {
-        Path imagePath = Paths.get(serverPath + folderName + "/" + mediaName);
+    public Resource downloadMediaByName(String mediaName, String folderName) {
+        // Create absolute path of media
+        Path path = Paths.get(serverPath + folderName + "\\" + mediaName);
         try {
-           return  new UrlResource(imagePath.toUri());
-
+            return new UrlResource(path.toUri());
         } catch (MalformedURLException e) {
-         throw new ResponseStatusException(
-                 HttpStatus.NOT_FOUND,
-                 "media has not been found"
-         );
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "Media has not been found!");
         }
-
     }
+    @Override
+    public MediaResponse deleteByName(String mediaName, String folderName) {
+
+        // Create absolute path of media
+        Path path = Paths.get(serverPath + folderName + "\\" + mediaName);
+
+        try {
+            long size = Files.size(path);
+            if (Files.deleteIfExists(path)) {
+                return MediaResponse.builder()
+                        .name(mediaName)
+                        .contentType(Files.probeContentType(path))
+                        .extension(MediaUtil.extractExtension(mediaName))
+                        .size(size)
+                        .uri(String.format("%s%s/%s", baseUri, folderName, mediaName))
+                        .build();
+            }
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "Media has not been found");
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    String.format("Media path %s cannot be deleted!", e.getLocalizedMessage()));
+        }
+    }
+
+
 //    @Override
 //
 //    public ResponseEntity<Resource> serverFile(String fileName, String folderName, HttpServletRequest request) {
