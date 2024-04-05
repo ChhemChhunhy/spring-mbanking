@@ -19,9 +19,10 @@ public class UserAccount {
     @ManyToOne
     //many user_accounts to one user
     private User user;
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     //many user_accounts to one account
     private Account account;
     private Boolean isDeleted;
+    private Boolean isBlocked;
     private LocalDateTime createAt;
 }

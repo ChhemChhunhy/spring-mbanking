@@ -7,6 +7,7 @@ import co.istad.mbakingapi.features.user.dto.*;
 import co.istad.mbakingapi.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -23,6 +24,12 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Slf4j
 public class UserServiceImpl implements UserService{
+
+    private final UserRepository userRepository;
+    private final UserMapper userMapper;
+    private final  RoleRepository roleRepository;
+    @Value("${media.base-uri}")
+    private String mediaBaseUri;
     @Override
     public UserResponse findByUuid(String uuid) {
         User user = userRepository.findByUuid(uuid).orElseThrow(
@@ -34,9 +41,6 @@ public class UserServiceImpl implements UserService{
         return userMapper.toUserResponse(user);
     }
 
-    private final UserRepository userRepository;
-    private final UserMapper userMapper;
-    private final  RoleRepository roleRepository;
     @Override
     public void createNew(UserCreateRequest userCreateRequest) {
 
@@ -265,4 +269,16 @@ public class UserServiceImpl implements UserService{
         return users.map(userMapper::toUserResponse);
     }
 
+    @Override
+    public String updateProfileImage(String uuid,String mediaName) {
+        User user = userRepository.findByUuid(uuid).orElseThrow(
+                ()-> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "User has not been found!"
+                )
+        );
+        user.setProfileImage(mediaName);
+        userRepository.save(user);
+        return mediaBaseUri+"IMAGE/"+mediaName;
+    }
 }

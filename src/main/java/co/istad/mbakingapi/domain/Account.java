@@ -34,7 +34,7 @@ public class Account {
     private BigDecimal transferLimit;
 
     // Account has a type
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     private AccountType accountType;
 
     @OneToMany(mappedBy = "account")

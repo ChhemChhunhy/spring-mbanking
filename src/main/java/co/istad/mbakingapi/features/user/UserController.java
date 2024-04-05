@@ -1,6 +1,7 @@
 package co.istad.mbakingapi.features.user;
 
 import co.istad.mbakingapi.base.BaseMessage;
+import co.istad.mbakingapi.base.BasedResponse;
 import co.istad.mbakingapi.features.user.dto.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -85,4 +86,14 @@ public class UserController {
         return userService.enableUserByUuid(uuid);
     }
 
+    //update
+    @PutMapping("/{uuid}/profile-image")
+    BasedResponse<?> updateProfileImage(@PathVariable String uuid,
+                                        @Valid @RequestBody UserProfileImageRequest userProfileImageRequest
+                                   ){
+        String newProfileImage = userService.updateProfileImage(uuid,userProfileImageRequest.mediaName());
+        return BasedResponse.builder()
+                .payload(newProfileImage)
+                .build();
+    }
 }

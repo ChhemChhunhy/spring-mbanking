@@ -6,7 +6,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -48,6 +50,21 @@ public class MediaController {
     public ResponseEntity<?> downloadFile(@PathVariable String mediaName, HttpServletRequest request){
         return mediaService.serverFile(mediaName,"IMAGE", request);
     }
+
+    //produce = accepts
+    //consumes = content-types
+    @GetMapping(value = "/{mediaName}/download",produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    ResponseEntity<?> downloadMediaByName(@PathVariable String mediaName){
+        Resource resource = mediaService.downloadMediaByName(mediaName,"IMAGE");
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(HttpHeaders.CONTENT_DISPOSITION,"attachment; filename"+mediaName);
+        return  ResponseEntity.ok().headers(headers).body(resource);
+        //return ResponseEntity.ok(resource);
+    }
+
+
+
+
 
 //    @GetMapping("/download/{name}")
 //    public MediaResponse downloadFile(@PathVariable("name") String name, HttpServletResponse response) {

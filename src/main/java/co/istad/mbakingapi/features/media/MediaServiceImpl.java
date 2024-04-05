@@ -288,6 +288,21 @@ public ResponseEntity<Resource> serverFile(String fileName, String folderName, H
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
 }
+
+    @Override
+    public Resource downloadMediaByName(String mediaName,String folderName) {
+        Path imagePath = Paths.get(serverPath + folderName + "/" + mediaName);
+        try {
+           return  new UrlResource(imagePath.toUri());
+
+        } catch (MalformedURLException e) {
+         throw new ResponseStatusException(
+                 HttpStatus.NOT_FOUND,
+                 "media has not been found"
+         );
+        }
+
+    }
 //    @Override
 //
 //    public ResponseEntity<Resource> serverFile(String fileName, String folderName, HttpServletRequest request) {

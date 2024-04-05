@@ -19,4 +19,6 @@ public interface MediaService {
     List<MediaResponse> loadAllMedias(String folderName);
     ResponseEntity<Resource> serverFile(String fileName, String folderName, HttpServletRequest request);
 
+    Resource downloadMediaByName(String mediaName,String folderName);
+
 }
