@@ -23,6 +23,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -54,8 +55,8 @@ public class AccountServiceImpl implements AccountService{
         Account account = accountMapper.fromAccountCreateRequest(accountCreateRequest);
         account.setAccountType(accountType);
         account.setActName(user.getName());
-        account.setActNo("231234568");
-        account.setTransferLimit(BigDecimal.valueOf(5000));
+        account.setActNo("102345678");
+        account.setTransferLimit(BigDecimal.valueOf(50000));
         account.setIsHidden(false);
 
         UserAccount userAccount = new UserAccount();
@@ -70,19 +71,37 @@ public class AccountServiceImpl implements AccountService{
 
     }
 
+
+
+    //    @Override
+//    public AccountResponse findByActNo(String actNo) {
+//        Account account = accountRepository.findByActNo(actNo).orElseThrow(
+//                ()-> new ResponseStatusException(
+//                        HttpStatus.NOT_FOUND,
+//                        "Account not found"
+//                )
+//        );
+//
+//        AccountTypeResponse accountType = accountTypeMapper.toAccountTypeResponse(account.getAccountType());
+//        UserResponse user = userMapper.toUserResponse(account.getUserAccountList().get(0).getUser());
+//        return new AccountResponse(account.getAlias(),account.getActName(),account.getTransferLimit(),account.getBalance(),accountType,user);
+//    }
     @Override
     public AccountResponse findByActNo(String actNo) {
-        Account account = accountRepository.findByActNo(actNo);
+        Account account =accountRepository.findByActNo(actNo).orElseThrow(
+                ()-> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Account no is valid"
+                )
+        );
 
-        AccountTypeResponse accountTypeResponse = accountTypeMapper.toAccountTypeResponse(account.getAccountType());
-        UserResponse userResponse = userMapper.toUserResponse(account.getUserAccountList().get(0).getUser());
-        return new AccountResponse(account.getAlias(),account.getActName(),account.getTransferLimit(),account.getBalance(),accountTypeResponse,userResponse);
-
+        return accountMapper.toAccountResponse(account);
     }
 
     @Override
-    public AccountResponse findByAccountNo(String actNo) {
-        return null;
+    public List<AccountResponse> findAll() {
+        List<Account> account = accountRepository.findAll();
+        return accountMapper.toAccountResponseList(account);
     }
 
 

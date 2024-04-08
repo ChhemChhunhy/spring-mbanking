@@ -7,11 +7,12 @@ import co.istad.mbakingapi.features.user.dto.UserResponse;
 import java.math.BigDecimal;
 
 public record AccountResponse(
-        String alias,
+        String actNo,
         String actName,
+        String alias,
         BigDecimal balance,
         BigDecimal transferLimit,
-        AccountTypeResponse accountTypeResponse,
-        UserResponse userResponse
+        AccountTypeResponse accountType,
+        UserResponse user
 ) {
 }

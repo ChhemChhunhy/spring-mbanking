@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/accounts")
 @RequiredArgsConstructor
@@ -21,6 +23,10 @@ public class AccountController {
 
     @GetMapping("/{actNo}")
     AccountResponse findByActNo(@PathVariable String actNo){
-        return accountService.findByActNo(actNo);
+       return accountService.findByActNo(actNo);
+    }
+    @GetMapping
+    List<AccountResponse> findAllAccounts(){
+        return accountService.findAll();
     }
 }
