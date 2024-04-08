@@ -13,7 +13,9 @@ import org.mapstruct.Qualifier;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring",uses = {
+        UserMapper.class,AccountTypeMapper.class
+})
 public interface AccountMapper {
     Account fromAccountCreateRequest(AccountCreateRequest accountCreateRequest);
     //custom
@@ -29,11 +31,6 @@ public interface AccountMapper {
     // SourceType = UserCreateRequest (Parameter)
     // TargetType = User (ReturnType)
 
-
-    @Named("mapUserResponse")
-    default UserResponse mapUserResponse(List<UserAccount> userAccountList){
-        return toUserResponse(userAccountList.get(0).getUser());
-    }
     UserResponse toUserResponse(User user);
 
     //@Mapping(source = "userAccountList",target = "user",qualifiedByName ="mapUserResponse" )
