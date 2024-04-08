@@ -1,6 +1,7 @@
 package co.istad.mbakingapi.features.account;
 
 import co.istad.mbakingapi.features.account.dto.AccountCreateRequest;
+import co.istad.mbakingapi.features.account.dto.AccountRenameRequest;
 import co.istad.mbakingapi.features.account.dto.AccountResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AccountController {
     private final AccountService accountService;
+    @PutMapping("/{actNo}/rename")
+    AccountResponse renameByActNo(@PathVariable String actNo, @Valid @RequestBody AccountRenameRequest accountRenameRequest){
+        return accountService.renameByActNo(actNo,accountRenameRequest);
+    }
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     void createNew(@Valid @RequestBody AccountCreateRequest accountCreateRequest) {

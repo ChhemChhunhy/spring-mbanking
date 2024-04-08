@@ -5,6 +5,7 @@ import co.istad.mbakingapi.domain.AccountType;
 import co.istad.mbakingapi.domain.User;
 import co.istad.mbakingapi.domain.UserAccount;
 import co.istad.mbakingapi.features.account.dto.AccountCreateRequest;
+import co.istad.mbakingapi.features.account.dto.AccountRenameRequest;
 import co.istad.mbakingapi.features.account.dto.AccountResponse;
 import co.istad.mbakingapi.features.accountType.AccountTypeRepository;
 import co.istad.mbakingapi.features.accountType.dto.AccountTypeResponse;
@@ -102,6 +103,27 @@ public class AccountServiceImpl implements AccountService{
     public List<AccountResponse> findAll() {
         List<Account> account = accountRepository.findAll();
         return accountMapper.toAccountResponseList(account);
+    }
+
+    @Override
+    public AccountResponse renameByActNo(String actNo, AccountRenameRequest accountRenameRequest) {
+
+        //check actNo if it exists
+        Account account = accountRepository.findByActNo(actNo).orElseThrow(
+                ()-> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Account no is valid"
+                )
+        );
+        //check old alias and new alias
+        if (account.getAlias().equals(accountRenameRequest.newName())){
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "New alias cannot be the same as the old one");
+        }
+        account.setAlias(accountRenameRequest.newName());
+         account=  accountRepository.save(account);
+
+        return accountMapper.toAccountResponse(account);
     }
 
 
