@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Entity
 @Table(name = "password_resets")
-
 public class PasswordResets {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

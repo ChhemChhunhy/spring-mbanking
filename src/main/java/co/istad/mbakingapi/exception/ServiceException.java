@@ -19,7 +19,8 @@ public class ServiceException {
         baseError.setDescription(ex.getReason());
         BaseErrorResponse baseErrorResponse = new BaseErrorResponse();
         baseErrorResponse.setError(baseError);
-        return ResponseEntity.ok(baseErrorResponse);
+       // return ResponseEntity.ok(baseErrorResponse);
+        return ResponseEntity.status(ex.getStatusCode()).body(baseErrorResponse);
     }
 
 }
