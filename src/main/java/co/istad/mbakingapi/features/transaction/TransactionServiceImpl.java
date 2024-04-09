@@ -105,7 +105,7 @@ public class TransactionServiceImpl implements TransactionService{
     }
 
     @Override
-    public Page<TransactionResponse> findList(int page, int size, String sortDirection) {
+    public Page<TransactionResponse> findList(int page, int size, String sort,String transferType) {
 
         if (page<0){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
@@ -115,15 +115,38 @@ public class TransactionServiceImpl implements TransactionService{
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Invalid page size,Page size greater than or equal to one");
         }
-        Sort.Direction direction = Sort.Direction.DESC;
-        if(sortDirection.equalsIgnoreCase("ASC")){
-            direction = Sort.Direction.ASC;
+        Sort.Direction direction;
+        String property;
+        if (sort != null && sort.startsWith("date")) {
+            String[] sortParts = sort.split(":");
+            if (sortParts.length == 2 && sortParts[1].equalsIgnoreCase("desc")) {
+                direction = Sort.Direction.DESC;
+            } else {
+                direction = Sort.Direction.ASC;
+            }
+            property = "transactionAt"; // Assuming transaction date property name
+        } else {
+            // Default sorting if sort parameter is not provided or invalid
+            direction = Sort.Direction.DESC;
+            property = "transactionAt";
+        }
+        Sort sortByTransactionDate = Sort.by(direction, property);
+//        Sort.Direction direction = Sort.Direction.DESC;
+//        if(sort.equalsIgnoreCase("ASC")){
+//            direction = Sort.Direction.ASC;
+//        }
+//
+//        Sort sortByActTransactAt = Sort.by(direction,"transactionAt");
+        Pageable pageable = PageRequest.of(page, size, sortByTransactionDate);
+        //PageRequest pageRequest = PageRequest.of(page,size,sortByTransactionDate);
+        //Page<Transaction> transactions = transactionRepository.findAll(pageRequest);
+        Page<Transaction> transactions;
+        if (transferType != null && !transferType.isEmpty()) {
+            transactions = transactionRepository.findByTransactionType(transferType, pageable);
+        } else {
+            transactions = transactionRepository.findAll(pageable);
         }
 
-        Sort sortByActTransactAt = Sort.by(direction,"transactionAt");
-
-        PageRequest pageRequest = PageRequest.of(page,size,sortByActTransactAt);
-        Page<Transaction> transactions = transactionRepository.findAll(pageRequest);
         return transactions.map(transactionMapper::toTransactionResponse);
     }
 
