@@ -105,7 +105,7 @@ public class TransactionServiceImpl implements TransactionService{
     }
 
     @Override
-    public Page<TransactionResponse> findList(int page, int size, String sort,String transferType) {
+    public Page<TransactionResponse> findList(int page, int size, String sort,String transactionType) {
 
         if (page<0){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
@@ -126,28 +126,22 @@ public class TransactionServiceImpl implements TransactionService{
             }
             property = "transactionAt"; // Assuming transaction date property name
         } else {
-            // Default sorting if sort parameter is not provided or invalid
+
             direction = Sort.Direction.DESC;
             property = "transactionAt";
         }
         Sort sortByTransactionDate = Sort.by(direction, property);
-//        Sort.Direction direction = Sort.Direction.DESC;
-//        if(sort.equalsIgnoreCase("ASC")){
-//            direction = Sort.Direction.ASC;
-//        }
-//
-//        Sort sortByActTransactAt = Sort.by(direction,"transactionAt");
-        Pageable pageable = PageRequest.of(page, size, sortByTransactionDate);
-        //PageRequest pageRequest = PageRequest.of(page,size,sortByTransactionDate);
-        //Page<Transaction> transactions = transactionRepository.findAll(pageRequest);
+        PageRequest pageRequest = PageRequest.of(page, size, sortByTransactionDate);
         Page<Transaction> transactions;
-        if (transferType != null && !transferType.isEmpty()) {
-            transactions = transactionRepository.findByTransactionType(transferType, pageable);
-        } else {
-            transactions = transactionRepository.findAll(pageable);
+        transactionType = transactionType.toUpperCase();
+        if (transactionType.equals("TRANSFER")){
+            transactions= transactionRepository.findByTransactionType(transactionType,pageRequest);
         }
-
+        else if (transactionType.equals("PAYMENT")){
+            transactions= transactionRepository.findByTransactionType(transactionType,pageRequest);
+        }else {
+            transactions= transactionRepository.findAll(pageRequest);
+        }
         return transactions.map(transactionMapper::toTransactionResponse);
     }
-
 }
