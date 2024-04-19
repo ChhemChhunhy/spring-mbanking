@@ -48,5 +48,7 @@ public interface UserRepository extends JpaRepository<User,Long> {
     @Query("UPDATE User AS u SET u.isDeleted =FALSE WHERE u.uuid = ?1")
     void updateIsDeletedFalse(String uuid);
 
-   // boolean existsByUuidAndIsDeleted(String uuid, Boolean isDeleted);
+    Optional<User> findByPhoneNumber(String phoneNumber);
+
+    // boolean existsByUuidAndIsDeleted(String uuid, Boolean isDeleted);
 }

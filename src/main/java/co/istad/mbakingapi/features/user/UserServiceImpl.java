@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -30,6 +31,7 @@ public class UserServiceImpl implements UserService{
     private final  RoleRepository roleRepository;
     @Value("${media.base-uri}")
     private String mediaBaseUri;
+    private final PasswordEncoder passwordEncoder;
     @Override
     public UserResponse findByUuid(String uuid) {
         User user = userRepository.findByUuid(uuid).orElseThrow(
@@ -76,9 +78,13 @@ public class UserServiceImpl implements UserService{
         User user = userMapper.fromUserCreateRequest(userCreateRequest);
         user.setUuid(UUID.randomUUID().toString());
         user.setProfileImage("avatar.png");
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setCreatedAt(LocalDateTime.now());
         user.setIsBlocked(false);
         user.setIsDeleted(false);
+        user.setAccountNonExpired(true);
+        user.setAccountNonLocked(true);
+        user.setCredentialsNonExpired(true);
         List<Role> roles = new ArrayList<>();
         Role userRole = roleRepository.findByName("USER").orElseThrow(
                 () -> new ResponseStatusException(
