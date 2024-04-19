@@ -11,5 +11,5 @@ public interface TransactionService {
     //transfer money
     TransactionResponse transfer(TransactionCreateRequest transactionCreateRequest);
     Page<TransactionResponse> findList(int page, int size,String sort,String transferType);
-    //List<TransactionResponse> findAll(String sort,);
+
 }

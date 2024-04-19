@@ -6,9 +6,9 @@ import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
 public record TransactionCreateRequest(
-        @NotBlank(message = "Account number is required")
+        @NotBlank(message = "Account Owner Number is required")
         String ownerActNo,
-        @NotBlank(message = "Tranfer is required")
+        @NotBlank(message = "Transfer Receiver is required")
         String transferReceiverActNo,
         @NotNull(message = "Amount is required")
         BigDecimal amount,

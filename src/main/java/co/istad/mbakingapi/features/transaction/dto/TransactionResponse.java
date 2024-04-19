@@ -14,10 +14,5 @@ public record TransactionResponse(
         String transactionType,
         Boolean status,
         LocalDateTime transactionAt
-        //amount
-        //remark
-//        transactionType
-//        status
-//        date
 ) {
 }

@@ -189,8 +189,6 @@ public MediaResponse downloadMediaByName(String mediaName, String folderName, Ht
     }
 }
 
-
-
 @Override
 public List<MediaResponse> loadAllMedias(String folderName) {
     Path path = Paths.get(serverPath + folderName);

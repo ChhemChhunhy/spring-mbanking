@@ -51,7 +51,6 @@ public class UserServiceImpl implements UserService{
             );
         }
 
-
         if (userRepository.existsByNationalCardId(userCreateRequest.nationalCardId())) {
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT,
@@ -147,12 +146,7 @@ public class UserServiceImpl implements UserService{
 
     @Override
     public UserResponse updateByUuid(String uuid, UserUpdateRequest userUpdateRequest) {
-        //exist returns boolean
-        //patch
-        //find return object
-        //check uuid
-        //User user = userRepository.findByUuid(uuid)
-        //path
+
         User user = userRepository.findByUuid(uuid).orElseThrow(
                 ()-> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
@@ -264,11 +258,8 @@ public class UserServiceImpl implements UserService{
     public Page<UserResponse> findList(int page,int limit) {
         PageRequest pageRequest = PageRequest.of(page,limit);
         Page<User> users = userRepository.findAll(pageRequest);
-        //List<User> user = userRepository.findAll();
-        //return userMapper.toUserResponseList(user);
         return users.map(userMapper::toUserResponse);
     }
-
     @Override
     public String updateProfileImage(String uuid,String mediaName) {
         User user = userRepository.findByUuid(uuid).orElseThrow(
