@@ -38,3 +38,5 @@ out/
 
 #applications.properties
 applications.properties
+applications-dev.properties
+
