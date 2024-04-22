@@ -1,5 +1,10 @@
 package co.istad.mbakingapi.security;
 
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.jwk.JWKSet;
+import com.nimbusds.jose.jwk.RSAKey;
+import com.nimbusds.jose.jwk.source.JWKSource;
+import com.nimbusds.jose.proc.SecurityContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,7 +17,17 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
+import java.security.interfaces.RSAPublicKey;
+import java.util.UUID;
 
 @Configuration
 @EnableWebSecurity
@@ -35,22 +50,11 @@ public class SecurityConfig {
         //logic for security
         httpSecurity
                 .authorizeHttpRequests(request -> request
+                        .requestMatchers(HttpMethod.POST,"/api/v1/auth/**").permitAll()
                         .requestMatchers(HttpMethod.POST,"/api/v1/users/**").permitAll()
                         .requestMatchers(HttpMethod.DELETE,"/api/v1/users/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET,"/api/v1/users/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET,"/api/v1/users/**").permitAll()
                         .requestMatchers(HttpMethod.PUT,"/api/v1/users/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT,"/api/v1/accounts/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET,"api/v1/accounts/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT,"api/v1/accounts/**").hasRole("CUSTOMER")
-                        .requestMatchers(HttpMethod.POST,"api/v1/accounts/**").hasRole("USER")
-                        .requestMatchers(HttpMethod.DELETE,"api/v1/accounts/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET,"api/v1/account-types/**").hasRole("CUSTOMER")
-                        .requestMatchers(HttpMethod.GET,"api/v1/card-types/**").hasRole("CUSTOMER")
-                        .requestMatchers(HttpMethod.GET,"api/v1/transactions/**").hasRole("CUSTOMER")
-                        .requestMatchers(HttpMethod.POST,"api/v1/transactions/**").hasRole("CUSTOMER")
-                        .requestMatchers(HttpMethod.GET,"api/v1/transactions/**").hasRole("STAFF")
-                        .requestMatchers(HttpMethod.GET,"api/v1/accounts/**").hasRole("STAFF")
-                        .requestMatchers(HttpMethod.GET,"api/v1/payments/**").hasRole("STAFF")
                         .anyRequest().authenticated());
         //security mechanism
         //httpSecurity.httpBasic(Customizer.withDefaults());
@@ -61,4 +65,42 @@ public class SecurityConfig {
         httpSecurity.sessionManagement(session-> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         return httpSecurity.build();
     }
+    //ssh-keygen : keypair (public key and private key)
+    //access token
+    @Bean
+    KeyPair keyPair(){
+        try {
+            KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+            return keyPairGenerator.generateKeyPair();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    //create Asymmetric key RSA Key endCode and Decode : generate jwt token
+    @Bean
+    RSAKey rsaKey (KeyPair keyPair){
+        return new RSAKey.Builder((RSAPublicKey) keyPair.getPublic())
+                .privateKey(keyPair.getPrivate())
+                .keyID(UUID.randomUUID().toString())
+                .build();
+    }
+    //jwkSource for create endCoder
+    @Bean
+    JWKSource<SecurityContext> jwkSource(RSAKey rsaKey){
+        JWKSet jwkSet = new JWKSet(rsaKey);
+        return (jwkSelector, securityContext) -> jwkSelector.select(jwkSet);
+    }
+
+    //issuer generated token when user issuer
+      @Bean
+    JwtEncoder jwtEncoder(JWKSource<SecurityContext> jwkSource){
+        return new NimbusJwtEncoder(jwkSource);
+      }
+    //jwt decoder when user submit header authorization
+    @Bean
+    JwtDecoder jwtDecoder(RSAKey rsaKey) throws JOSEException {
+        return NimbusJwtDecoder.withPublicKey(rsaKey.toRSAPublicKey()).build();
+    }
+
+
 }
