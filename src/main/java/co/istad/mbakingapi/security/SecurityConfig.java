@@ -53,8 +53,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET,"api/v1/payments/**").hasRole("STAFF")
                         .anyRequest().authenticated());
         //security mechanism
-        //httpSecurity.httpBasic(Customizer.withDefaults());
-        httpSecurity.oauth2ResourceServer(jwt -> jwt.jwt(Customizer.withDefaults()));
+        httpSecurity.httpBasic(Customizer.withDefaults());
         //disable token for post and put
         httpSecurity.csrf(AbstractHttpConfigurer::disable);
         //stateless
