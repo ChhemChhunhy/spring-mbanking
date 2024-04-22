@@ -16,7 +16,7 @@ public class UserDetailsImpl implements UserDetailsService {
     private final UserRepository userRepository;
     @Override
     public UserDetails loadUserByUsername(String phoneNumber) throws UsernameNotFoundException {
-        //spring security before dispatcher serverlet
+        //spring security before dispatcher
         User user = userRepository.findByPhoneNumber(phoneNumber).orElseThrow(
                 ()-> new UsernameNotFoundException(
                        "User not found"
