@@ -51,10 +51,11 @@ public class SecurityConfig {
         httpSecurity
                 .authorizeHttpRequests(request -> request
                         .requestMatchers(HttpMethod.POST,"/api/v1/auth/**").permitAll()
-                        .requestMatchers(HttpMethod.POST,"/api/v1/users/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE,"/api/v1/users/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET,"/api/v1/users/**").permitAll()
-                        .requestMatchers(HttpMethod.PUT,"/api/v1/users/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST,"/api/v1/users/**").permitAll()
+                        //.requestMatchers(HttpMethod.GET,"/api/v1/users/**").hasAnyAuthority("SCOPE_user:update")
+                        .requestMatchers(HttpMethod.DELETE,"/api/v1/users/**").hasAnyAuthority("SCOPE_ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.GET,"/api/v1/users/**").hasAnyAuthority("SCOPE_ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.PUT,"/api/v1/users/**").hasAnyAuthority("SCOPE_ROLE_ADMIN")
                         .anyRequest().authenticated());
         //security mechanism
         //httpSecurity.httpBasic(Customizer.withDefaults());
@@ -101,6 +102,5 @@ public class SecurityConfig {
     JwtDecoder jwtDecoder(RSAKey rsaKey) throws JOSEException {
         return NimbusJwtDecoder.withPublicKey(rsaKey.toRSAPublicKey()).build();
     }
-
 
 }
