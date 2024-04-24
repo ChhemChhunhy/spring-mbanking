@@ -34,11 +34,19 @@ public class AuthServiceImpl implements AuthService{
        auth= daoAuthenticationProvider.authenticate(auth);
 
         CustomUserDetails userDetails = ((CustomUserDetails) auth.getPrincipal());
+//        String scope = userDetails.getAuthorities().stream()
+//                .filter(grantedAuthority -> )
+//                .map(grantedAuthority -> grantedAuthority.getAuthority())
+//                .collect(Collectors.joining());
+        String scope = userDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                //.filter(authority -> !authority.startsWith("ROLe_") )
+                .collect(Collectors.joining(" "));
         Instant now = Instant.now();
         //scope
-        String scope = auth.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.joining(" "));
+//        String scope = auth.getAuthorities().stream()
+//                .map(GrantedAuthority::getAuthority)
+//                .collect(Collectors.joining(" "));
         JwtClaimsSet jwtClaimsSet = JwtClaimsSet.builder()
                 .id(userDetails.getUsername())
                 .subject("Access Resource")
@@ -50,9 +58,6 @@ public class AuthServiceImpl implements AuthService{
                 .claim("scope",scope)
                 .build();
       String accessToken=  jwtEncoder.encode(JwtEncoderParameters.from(jwtClaimsSet)).getTokenValue();
-
-
-
         return new AuthResponse(
                 "Bearer",
                 accessToken,
