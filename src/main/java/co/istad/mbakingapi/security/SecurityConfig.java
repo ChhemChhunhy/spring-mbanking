@@ -6,8 +6,10 @@ import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
@@ -21,6 +23,7 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationProvider;
 import org.springframework.security.web.SecurityFilterChain;
 
 import java.security.KeyPair;
@@ -35,6 +38,12 @@ import java.util.UUID;
 public class SecurityConfig {
     private final PasswordEncoder passwordEncoder;
     private final UserDetailsService userDetailsService;
+
+    @Bean
+    JwtAuthenticationProvider jwtAuthenticationProvider(@Qualifier("refreshJwtDecoder") JwtDecoder refreshJwtDecoder){
+        JwtAuthenticationProvider jwtAuthentication = new JwtAuthenticationProvider(refreshJwtDecoder);
+        return jwtAuthentication;
+    }
 
     //jdbc:security
     @Bean
@@ -74,16 +83,19 @@ public class SecurityConfig {
     }
     //ssh-keygen : keypair (public key and private key)
     //access token
+    @Primary
     @Bean
     KeyPair keyPair(){
         try {
             KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+            keyPairGenerator.initialize(512);
             return keyPairGenerator.generateKeyPair();
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
     }
     //create Asymmetric key RSA Key endCode and Decode : generate jwt token
+    @Primary
     @Bean
     RSAKey rsaKey (KeyPair keyPair){
         return new RSAKey.Builder((RSAPublicKey) keyPair.getPublic())
@@ -92,6 +104,7 @@ public class SecurityConfig {
                 .build();
     }
     //jwkSource for create endCoder
+    @Primary
     @Bean
     JWKSource<SecurityContext> jwkSource(RSAKey rsaKey){
         JWKSet jwkSet = new JWKSet(rsaKey);
@@ -99,13 +112,41 @@ public class SecurityConfig {
     }
 
     //issuer generated token when user issuer
-      @Bean
+    @Primary
+    @Bean
     JwtEncoder jwtEncoder(JWKSource<SecurityContext> jwkSource){
         return new NimbusJwtEncoder(jwkSource);
       }
     //jwt decoder when user submit header authorization
+    @Primary
     @Bean
     JwtDecoder jwtDecoder(RSAKey rsaKey) throws JOSEException {
+        return NimbusJwtDecoder.withPublicKey(rsaKey.toRSAPublicKey()).build();
+    }
+
+
+    @Bean("refreshRsaKey")
+    RSAKey refreshRsaKey (KeyPair keyPair){
+        return new RSAKey.Builder((RSAPublicKey) keyPair.getPublic())
+                .privateKey(keyPair.getPrivate())
+                .keyID(UUID.randomUUID().toString())
+                .build();
+    }
+    //jwkSource for create endCoder
+    @Bean("refreshJwkSource")
+    JWKSource<SecurityContext> refreshJwkSource(@Qualifier("refreshRsaKey") RSAKey rsaKey){
+        JWKSet jwkSet = new JWKSet(rsaKey);
+        return (jwkSelector, securityContext) -> jwkSelector.select(jwkSet);
+    }
+
+    //issuer generated token when user issuer
+    @Bean("refreshJwtEncoder")
+    JwtEncoder refreshJwtEncoder(@Qualifier("refreshJwkSource") JWKSource<SecurityContext> jwkSource){
+        return new NimbusJwtEncoder(jwkSource);
+    }
+    //jwt decoder when user submit header authorization
+    @Bean("refreshJwtDecoder")
+    JwtDecoder refreshJwtDecoder(@Qualifier("refreshRsaKey") RSAKey rsaKey) throws JOSEException {
         return NimbusJwtDecoder.withPublicKey(rsaKey.toRSAPublicKey()).build();
     }
 
