@@ -3,6 +3,7 @@ package co.istad.mbakingapi.features.auth;
 import co.istad.mbakingapi.features.auth.dto.AuthResponse;
 import co.istad.mbakingapi.features.auth.dto.LoginRequest;
 import co.istad.mbakingapi.features.auth.dto.RefreshTokenRequest;
+import co.istad.mbakingapi.features.token.TokenService;
 import co.istad.mbakingapi.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,71 +33,31 @@ import java.util.stream.Collectors;
 public class AuthServiceImpl implements AuthService{
     //inject bean
     private final DaoAuthenticationProvider daoAuthenticationProvider;
-    private final JwtEncoder jwtEncoder;
     private final JwtAuthenticationProvider jwtAuthenticationProvider;
-
-    private JwtEncoder refreshJwtEncoder;
-    @Qualifier("refreshJwtEncoder")
-    @Autowired
-    public void setRefreshJwtEncoder(JwtEncoder refreshJwtEncoder) {
-        this.refreshJwtEncoder = refreshJwtEncoder;
-    }
+    private final TokenService tokenService;
 
     @Override
     public AuthResponse refresh(RefreshTokenRequest refreshTokenRequest) {
-        Authentication auth = new BearerTokenAuthenticationToken(refreshTokenRequest.refreshToken());
-        auth= jwtAuthenticationProvider.authenticate(auth);
-        Jwt jwt = (Jwt) auth.getPrincipal();
-        return null;
+        Authentication auth = new BearerTokenAuthenticationToken(
+                refreshTokenRequest.refreshToken()
+        );
+
+        auth = jwtAuthenticationProvider.authenticate(auth);
+
+        return tokenService.createToken(auth);
+
     }
 
     @Override
     public AuthResponse login(LoginRequest loginRequest) {
-        //core
-        //authentication
-        Authentication auth = new UsernamePasswordAuthenticationToken(loginRequest.phoneNumber(),loginRequest.password());
-       auth= daoAuthenticationProvider.authenticate(auth);
-
-        CustomUserDetails userDetails = ((CustomUserDetails) auth.getPrincipal());
-//        String scope = userDetails.getAuthorities().stream()
-//                .filter(grantedAuthority -> )
-//                .map(grantedAuthority -> grantedAuthority.getAuthority())
-//                .collect(Collectors.joining());
-        String scope = userDetails.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                //.filter(authority -> !authority.startsWith("ROLe_") )
-                .collect(Collectors.joining(" "));
-        Instant now = Instant.now();
-        //scope
-//        String scope = auth.getAuthorities().stream()
-//                .map(GrantedAuthority::getAuthority)
-//                .collect(Collectors.joining(" "));
-        JwtClaimsSet jwtClaimsSet = JwtClaimsSet.builder()
-                .id(userDetails.getUsername())
-                .subject("Access Resource")
-                .audience(List.of("WEB","MOBILE"))
-                .issuedAt(now)
-                .expiresAt(now.plus(5, ChronoUnit.MINUTES))
-                .issuer(userDetails.getUsername())
-                //claim scope
-                .claim("scope",scope)
-                .build();
-        JwtClaimsSet refreshJwtClaimsSet = JwtClaimsSet.builder()
-                .id(userDetails.getUsername())
-                .subject("Refresh Resource")
-                .audience(List.of("WEB","MOBILE"))
-                .issuedAt(now)
-                .expiresAt(now.plus(1, ChronoUnit.HOURS))
-                .issuer(userDetails.getUsername())
-                //claim scope
-                //.claim("scope",scope)
-                .build();
-      String accessToken=  jwtEncoder.encode(JwtEncoderParameters.from(jwtClaimsSet)).getTokenValue();
-      String refreshToken=  refreshJwtEncoder.encode(JwtEncoderParameters.from(refreshJwtClaimsSet)).getTokenValue();
-        return new AuthResponse(
-                "Bearer",
-                accessToken,
-                refreshToken
+        Authentication auth = new UsernamePasswordAuthenticationToken(
+                loginRequest.phoneNumber(),
+                loginRequest.password()
         );
+
+        auth = daoAuthenticationProvider.authenticate(auth);
+
+        return tokenService.createToken(auth);
+
     }
 }
