@@ -95,8 +95,4 @@ public class User {
     private Boolean isBlocked; // manage block status (when there is bad action happened)
 
     private LocalDateTime createdAt;
-
-
-
-
 }
