@@ -42,11 +42,17 @@ public class TokenServiceImpl implements TokenService {
 
     @Override
     public String createAccessToken(Authentication auth) {
-        String scope = auth.getAuthorities()
-                .stream()
-                .map(GrantedAuthority::getAuthority)
-                .filter(authority -> !authority.startsWith("ROLE_"))
-                .collect(Collectors.joining(" "));
+        String scope= "";
+        if (auth.getPrincipal() instanceof Jwt jwt){
+            scope = jwt.getClaimAsString("scope");
+        }
+        else {
+            scope= auth.getAuthorities()
+                    .stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .filter(authority -> !authority.startsWith("ROLE_"))
+                    .collect(Collectors.joining(" "));
+        }
 
         log.info("Scope {} :",scope);
 
@@ -69,6 +75,16 @@ public class TokenServiceImpl implements TokenService {
     @Override
     public String createRefreshToken(Authentication auth) {
 
+        String scope= "";
+        if (auth.getPrincipal() instanceof Jwt jwt){
+            scope = jwt.getClaimAsString("scope");
+        }else {
+            scope= auth.getAuthorities()
+                    .stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .filter(authority -> !authority.startsWith("ROLE_"))
+                    .collect(Collectors.joining(" "));
+        }
         Instant now = Instant.now();
         JwtClaimsSet refreshJwtClaimsSet = JwtClaimsSet.builder()
                 .id(auth.getName())
@@ -77,6 +93,7 @@ public class TokenServiceImpl implements TokenService {
                 .issuedAt(now)
                 .expiresAt(now.plus(1, ChronoUnit.HOURS))
                 .issuer(auth.getName())
+                .claim("scope",scope)
                 .build();
 
         return refreshJwtEncoder.encode(JwtEncoderParameters.from(refreshJwtClaimsSet)).getTokenValue();
