@@ -50,7 +50,7 @@ public class SecurityConfig {
         //logic for security
         httpSecurity
                 .authorizeHttpRequests(request -> request
-                        .requestMatchers("/api/v1/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.POST,"/api/v1/auth/**").permitAll()
 
                         .requestMatchers(HttpMethod.POST,"/api/v1/users/**").permitAll()
                         .requestMatchers(HttpMethod.DELETE,"/api/v1/users/**").hasAuthority("SCOPE_user:write")
