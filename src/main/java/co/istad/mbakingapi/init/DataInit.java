@@ -41,12 +41,16 @@ public class DataInit {
 
             Authority accountRead = new Authority();
             accountRead.setName("account:read");
+
             Authority accountWrite = new Authority();
             accountWrite.setName("account:write");
+
             Authority accountTypeRead = new Authority();
             accountTypeRead.setName("accountType:read");
+
             Authority accountTypeWrite = new Authority();
             accountTypeWrite.setName("accountType:write");
+
             Role user = new Role();
             user.setName("USER");
             user.setAuthorities(List.of(userRead,transactionRead,accountRead,accountTypeRead));
@@ -66,30 +70,8 @@ public class DataInit {
             roleRepository.saveAll(
                     List.of(user,customer,staff,admin)
             );
-        }
-//        if (authorityRepository.count()<1){
-//            Authority userRead = new Authority();
-//            userRead.setName("user:read");
-//
-//            Authority userWrite = new Authority();
-//            userWrite.setName("user:write");
-//
-//            Authority transactionRead = new Authority();
-//            transactionRead.setName("transaction:read");
-//
-//            Authority transactionWrite = new Authority();
-//            transactionWrite.setName("transaction:write");
-//
-//            Authority accountRead = new Authority();
-//            accountRead.setName("account:read");
-//            Authority accountWrite = new Authority();
-//            accountWrite.setName("account:write");
-//            Authority accountTypeRead = new Authority();
-//            accountTypeRead.setName("accountType:read");
-//            Authority accountTypeWrite = new Authority();
-//            accountTypeWrite.setName("accountType:write");
-//        }
 
+        }
     }
 
 

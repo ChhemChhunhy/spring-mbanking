@@ -50,18 +50,17 @@ public class SecurityConfig {
         //logic for security
         httpSecurity
                 .authorizeHttpRequests(request -> request
-                        .requestMatchers(HttpMethod.POST,"/api/v1/auth/**").permitAll()
+                        .requestMatchers("/api/v1/auth/**").permitAll()
+
                         .requestMatchers(HttpMethod.POST,"/api/v1/users/**").permitAll()
-                        //.requestMatchers(HttpMethod.GET,"/api/v1/users/**").hasAnyAuthority("SCOPE_user:update")
                         .requestMatchers(HttpMethod.DELETE,"/api/v1/users/**").hasAuthority("SCOPE_user:write")
                         .requestMatchers(HttpMethod.GET,"/api/v1/users/**").hasAuthority("SCOPE_user:read")
                         .requestMatchers(HttpMethod.PUT,"/api/v1/users/**").hasAuthority("SCOPE_user:write")
 
                         .requestMatchers(HttpMethod.POST,"/api/v1/accounts/**").hasAuthority("SCOPE_account:write")
-                        //.requestMatchers(HttpMethod.GET,"/api/v1/users/**").hasAnyAuthority("SCOPE_user:update")
                         .requestMatchers(HttpMethod.DELETE,"/api/v1/accounts/**").hasAuthority("SCOPE_account:write")
-                        .requestMatchers(HttpMethod.GET,"/api/v1/accounts/**").hasAnyAuthority("SCOPE_ROLE_ADMIN","SCOPE_ROLE_STAFF")
-                        .requestMatchers(HttpMethod.PUT,"/api/v1/accounts/**").hasAuthority("SCOPE_account:write")
+                        .requestMatchers(HttpMethod.GET,"/api/v1/accounts/**").hasAuthority("SCOPE_account:read")
+                        .requestMatchers(HttpMethod.PUT,"/api/v1/accounts/**").hasAnyAuthority("SCOPE_ROLE_ADMIN","SCOPE_account:write")
                         .anyRequest().authenticated());
         //security mechanism
         //httpSecurity.httpBasic(Customizer.withDefaults());
