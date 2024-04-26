@@ -24,6 +24,7 @@ public class AuthController {
     AuthResponse login(@Valid @RequestBody LoginRequest loginRequest){
         return authService.login(loginRequest);
     }
+
     @PostMapping("/refresh")
     AuthResponse refresh(@Valid @RequestBody RefreshTokenRequest refreshTokenRequest) {
         return authService.refresh(refreshTokenRequest);

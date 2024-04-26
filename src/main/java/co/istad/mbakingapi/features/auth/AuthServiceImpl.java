@@ -86,7 +86,7 @@ public class AuthServiceImpl implements AuthService{
         if (!passwordEncoder.matches(changePasswordRequest.oldPassword(),user.getPassword())){
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
-                    "Password does not match"
+                    "Old Password does not match"
             );
         }
         if (passwordEncoder.matches(changePasswordRequest.password(),user.getPassword())){
@@ -96,5 +96,6 @@ public class AuthServiceImpl implements AuthService{
             );
         }
         user.setPassword(passwordEncoder.encode(changePasswordRequest.password()));
+        userRepository.save(user);
     }
 }
