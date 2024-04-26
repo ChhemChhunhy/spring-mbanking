@@ -1,5 +1,6 @@
 package co.istad.mbakingapi.security;
 
+import co.istad.mbakingapi.util.KeyUtil;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
@@ -38,6 +39,7 @@ import java.util.UUID;
 public class SecurityConfig {
     private final PasswordEncoder passwordEncoder;
     private final UserDetailsService userDetailsService;
+    private final KeyUtil keyUtil;
 
     @Bean
     JwtAuthenticationProvider jwtAuthenticationProvider(@Qualifier("refreshJwtDecoder") JwtDecoder refreshJwtDecoder) {
@@ -83,83 +85,53 @@ public class SecurityConfig {
     //====== JWT Access Token
     @Primary
     @Bean
-    KeyPair keyPair(){
-        try {
-            KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
-            keyPairGenerator.initialize(2048);
-            return keyPairGenerator.generateKeyPair();
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    //create Asymmetric key RSA Key endCode and Decode : generate jwt token
-    @Primary
-    @Bean
-    RSAKey rsaKey (KeyPair keyPair){
-        return new RSAKey.Builder((RSAPublicKey) keyPair.getPublic())
-                .privateKey(keyPair.getPrivate())
+    JWKSource<SecurityContext> jwkSource() {
+        RSAKey rsaKey = new RSAKey.Builder(keyUtil.getAccessTokenPublicKey())
+                .privateKey(keyUtil.getAccessTokenPrivateKey())
                 .keyID(UUID.randomUUID().toString())
                 .build();
-    }
-    //jwkSource for create endCoder
-
-    @Primary
-    @Bean
-    JWKSource<SecurityContext> jwkSource(RSAKey rsaKey){
         JWKSet jwkSet = new JWKSet(rsaKey);
-        return (jwkSelector, securityContext) -> jwkSelector.select(jwkSet);
+        return (jwkSelector, securityContext) -> jwkSelector
+                .select(jwkSet);
     }
 
-    //issuer generated token when user issuer
     @Primary
     @Bean
-    JwtEncoder jwtEncoder(JWKSource<SecurityContext> jwkSource){
+    JwtEncoder jwtEncoder(JWKSource<SecurityContext> jwkSource) {
         return new NimbusJwtEncoder(jwkSource);
-      }
+    }
 
-    //jwt decoder when user submit header authorization
     @Primary
     @Bean
-    JwtDecoder jwtDecoder(RSAKey rsaKey) throws JOSEException {
-        return NimbusJwtDecoder.withPublicKey(rsaKey.toRSAPublicKey()).build();
+    JwtDecoder jwtDecoder() throws JOSEException {
+        return NimbusJwtDecoder
+                .withPublicKey(keyUtil.getAccessTokenPublicKey())
+                .build();
     }
+
 
     //====== JWT Refresh Token =================
-
-    @Bean("refreshKeyPair")
-    KeyPair refreshKeyPair(){
-        try {
-            KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
-            return keyPairGenerator.generateKeyPair();
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
-    }
-    //create Asymmetric key RSA Key endCode and Decode : generate jwt token
-    @Bean("refreshRsaKey")
-    RSAKey refreshRsaKey (@Qualifier("refreshKeyPair") KeyPair keyPair){
-        return new RSAKey.Builder((RSAPublicKey) keyPair.getPublic())
-                .privateKey(keyPair.getPrivate())
+    @Bean("refreshJwkSource")
+    JWKSource<SecurityContext> refreshJwkSource() {
+        RSAKey rsaKey = new RSAKey.Builder(keyUtil.getRefreshTokenPublicKey())
+                .privateKey(keyUtil.getRefreshTokenPrivateKey())
                 .keyID(UUID.randomUUID().toString())
                 .build();
-    }
-    //jwkSource for create endCoder
-    @Bean("refreshJwkSource")
-    JWKSource<SecurityContext> refreshJwkSource(@Qualifier("refreshRsaKey") RSAKey rsaKey){
         JWKSet jwkSet = new JWKSet(rsaKey);
-        return (jwkSelector, securityContext) -> jwkSelector.select(jwkSet);
+        return (jwkSelector, securityContext) -> jwkSelector
+                .select(jwkSet);
     }
 
-    //issuer generated token when user issuer
     @Bean("refreshJwtEncoder")
-    JwtEncoder refreshJwtEncoder(@Qualifier("refreshJwkSource") JWKSource<SecurityContext> jwkSource){
+    JwtEncoder refreshJwtEncoder(@Qualifier("refreshJwkSource") JWKSource<SecurityContext> jwkSource) {
         return new NimbusJwtEncoder(jwkSource);
     }
-    //jwt decoder when user submit header authorization
+
     @Bean("refreshJwtDecoder")
-    JwtDecoder refreshJwtDecoder(@Qualifier("refreshRsaKey") RSAKey rsaKey) throws JOSEException {
-        return NimbusJwtDecoder.withPublicKey(rsaKey.toRSAPublicKey()).build();
+    JwtDecoder refreshJwtDecoder() throws JOSEException {
+        return NimbusJwtDecoder
+                .withPublicKey(keyUtil.getRefreshTokenPublicKey())
+                .build();
     }
 
 

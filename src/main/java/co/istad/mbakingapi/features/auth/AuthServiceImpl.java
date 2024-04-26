@@ -3,6 +3,7 @@ package co.istad.mbakingapi.features.auth;
 import co.istad.mbakingapi.features.auth.dto.AuthResponse;
 import co.istad.mbakingapi.features.auth.dto.LoginRequest;
 import co.istad.mbakingapi.features.auth.dto.RefreshTokenRequest;
+import co.istad.mbakingapi.features.token.TokenService;
 import co.istad.mbakingapi.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,89 +33,20 @@ public class AuthServiceImpl implements AuthService{
     //inject bean
     private final DaoAuthenticationProvider daoAuthenticationProvider;
     private final JwtAuthenticationProvider jwtAuthenticationProvider;
-    private final JwtEncoder jwtEncoder;
-    private JwtEncoder refreshJwtEncoder;
-    @Qualifier("refreshJwtEncoder")
-    @Autowired
-    public void setRefreshJwtEncoder(JwtEncoder refreshJwtEncoder) {
-        this.refreshJwtEncoder = refreshJwtEncoder;
-    }
+    private final TokenService tokenService;
 
     @Override
     public AuthResponse refresh(RefreshTokenRequest refreshTokenRequest) {
         Authentication auth = new BearerTokenAuthenticationToken(refreshTokenRequest.refreshToken());
         auth= jwtAuthenticationProvider.authenticate(auth);
-        Jwt jwt =(Jwt)auth.getPrincipal();
-        log.info("user name: {}",jwt.getId());
-        log.info("scope: {}",jwt.getClaimAsString("scope"));
-
-        Instant now = Instant.now();
-        JwtClaimsSet jwtClaimsSet = JwtClaimsSet.builder()
-                .id(jwt.getId())
-                .subject("Access Resource")
-                .audience(List.of("WEB","MOBILE"))
-                .issuedAt(now)
-                .expiresAt(now.plus(5, ChronoUnit.MINUTES))
-                .issuer(jwt.getId())
-                .claim("scope",jwt.getClaimAsString("scope"))
-                .build();
-
-        String accessToken=  jwtEncoder.encode(JwtEncoderParameters.from(jwtClaimsSet)).getTokenValue();
-        //refresh token
-       // String refreshToken = refreshJwtEncoder.encode(JwtEncoderParameters.from(refreshJwtClaimsSet)) .getTokenValue();
-        return new AuthResponse(
-                "Bearer",
-                accessToken,
-                refreshTokenRequest.refreshToken()
-        );
+        return tokenService.createToken(auth);
     }
 
     @Override
     public AuthResponse login(LoginRequest loginRequest) {
-        //core
-        //authentication
         Authentication auth = new UsernamePasswordAuthenticationToken(loginRequest.phoneNumber(),loginRequest.password());
        auth= daoAuthenticationProvider.authenticate(auth);
+       return tokenService.createToken(auth);
 
-        CustomUserDetails userDetails = ((CustomUserDetails) auth.getPrincipal());
-
-        String scope = userDetails.getAuthorities()
-                .stream()
-                .map(GrantedAuthority::getAuthority)
-                //.filter(authority -> !authority.startsWith("ROLE_"))
-                .collect(Collectors.joining(" "));
-
-        log.info("Scope {} :",scope);
-
-        Instant now = Instant.now();
-
-        JwtClaimsSet jwtClaimsSet = JwtClaimsSet.builder()
-                .id(userDetails.getUsername())
-                .subject("Access Resource")
-                .audience(List.of("WEB","MOBILE"))
-                .issuedAt(now)
-                .expiresAt(now.plus(5, ChronoUnit.MINUTES))
-                .issuer(userDetails.getUsername())
-                .claim("scope",scope)
-                .build();
-
-        JwtClaimsSet refreshJwtClaimsSet = JwtClaimsSet.builder()
-                .id(userDetails.getUsername())
-                .subject("Refresh Resource")
-                .audience(List.of("WEB","MOBILE"))
-                .issuedAt(now)
-                .expiresAt(now.plus(1, ChronoUnit.HOURS))
-                .issuer(userDetails.getUsername())
-                .claim("scope",scope)
-                .build();
-
-      String accessToken=  jwtEncoder.encode(JwtEncoderParameters.from(jwtClaimsSet)).getTokenValue();
-      //refresh token
-      String refreshToken = refreshJwtEncoder.encode(JwtEncoderParameters.from(refreshJwtClaimsSet)) .getTokenValue();
-        return new AuthResponse(
-                "Bearer",
-                accessToken,
-                refreshToken
-        );
     }
 }
