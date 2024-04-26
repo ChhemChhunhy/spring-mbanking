@@ -36,7 +36,7 @@ out/
 ### VS Code ###
 .vscode/
 
+
+keys
 #application.properties
 application-dev.properties
-application.properties
-
